@@ -174,21 +174,24 @@ tcp_drop_init(void)
 {
 	struct proc_dir_entry *res;
 
+	static const struct file_operations proc_file_fops = {
+		.owner = THIS_MODULE,
+		.write = tcp_drop_write_proc
+	};	
+
 	printk(KERN_DEBUG "tcp_drop: loading\n");
 
-	res = create_proc_entry(TCP_DROP_PROC, S_IWUSR | S_IWGRP, 
+	res = proc_create(TCP_DROP_PROC, S_IWUSR | S_IWGRP, 
 #ifdef CONFIG_NET_NS
 		init_net.
 #endif
-		proc_net);
+		proc_net, &proc_file_fops);
 
 	if (!res) {
 		printk(KERN_ERR "tcp_drop: unable to register proc file\n");
 		return -ENOMEM;
 	}
 	
-	res->write_proc = tcp_drop_write_proc;
-
 	return 0;
 }
 
